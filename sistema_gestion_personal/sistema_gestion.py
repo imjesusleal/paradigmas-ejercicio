@@ -19,7 +19,7 @@ departamento, calcular salarios y acceder a la información de las personas
 
 ## REHACER!!
 
-from abc import ABC
+from abc import ABC, abstractmethod
 import itertools
 
 
@@ -47,12 +47,10 @@ class Persona(ABC):
 class Empleado(Persona):
     
     RANGO_SALARIAL = (30000,120000)
-    DEPARTAMENTOS = ['IT', 'RRHH', 'CONTABLE']
 
-    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float, cargo: str):
+    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float):
         super().__init__(nombre, apellido, edad, dni)
         self._salario = salario if self.__validate_salario(salario) else None
-        self.cargo = cargo
 
     @property
     def salario(self):
@@ -71,62 +69,147 @@ class Empleado(Persona):
                 self._salario = value
             else:
                 raise ValueError(f"No se puede exceder el rango salarial del tipo de {type(self)}.")
+    
+    def __repr__(self) -> str:
+        return f'{self.nombre} {self.apellido}'
 
 
 class EmpleadoIT(Empleado):
 
     RANGO_SALARIAL = (40000,90000)
 
-    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float, cargo: str):
-        super().__init__(nombre, apellido, edad, dni, salario, cargo)
+    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float):
+        super().__init__(nombre, apellido, edad, dni, salario)
 
     
 class EmpleadoRRHH(Empleado):
     
     RANGO_SALARIAL = (30000,80000)
 
-    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float, cargo: str):
-        super().__init__(nombre, apellido, edad, dni, salario, cargo)
+    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float):
+        super().__init__(nombre, apellido, edad, dni, salario)
 
 class EmpleadoContable(Empleado):
     
     RANGO_SALARIAL = (40000,80000)
 
-    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float, cargo: str):
-        super().__init__(nombre, apellido, edad, dni, salario, cargo)
+    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float):
+        super().__init__(nombre, apellido, edad, dni, salario)
 
 class Gerente(Empleado):
     
     RANGO_SALARIAL = (70000,120000)
 
-    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float, cargo: str):
-        super().__init__(nombre, apellido, edad, dni, salario, cargo)
+    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float):
+        super().__init__(nombre, apellido, edad, dni, salario)
 
 
 class GerenteIT(Gerente):
     
-    RANGO_SALARIAL = (70000,120000)
+    RANGO_SALARIAL = (100000,120000)
 
-    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float, cargo: str):
-        super().__init__(nombre, apellido, edad, dni, salario, cargo)
+    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float):
+        super().__init__(nombre, apellido, edad, dni, salario)
+        self.departamento = DepartamentoIT
 
 class GerenteRRHH(Gerente):
     
-    RANGO_SALARIAL = (70000,120000)
+    RANGO_SALARIAL = (80000,120000)
 
-    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float, cargo: str):
-        super().__init__(nombre, apellido, edad, dni, salario, cargo)
+    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float):
+        super().__init__(nombre, apellido, edad, dni, salario)
+        self.departamento = DepartamentoRRHH
+
 
 class GerenteContable(Gerente):
     
-    RANGO_SALARIAL = (70000,120000)
+    RANGO_SALARIAL = (90000,120000)
 
-    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float, cargo: str):
-        super().__init__(nombre, apellido, edad, dni, salario, cargo)
+    def __init__(self, nombre: str, apellido: str, edad: int, dni: int, salario: int | float):
+        super().__init__(nombre, apellido, edad, dni, salario)
+        self.departamento = DepartamentoContable
 
 class Departamento(ABC):
-    pass
 
+    def check_employee(self, employee:Empleado):
+            if isinstance(employee, EmpleadoIT):
+                return employee   
+            if isinstance(employee, EmpleadoRRHH):
+                return employee
+            if isinstance(employee, EmpleadoContable):
+                return employee
+                
+class DepartamentoIT(Departamento):
+
+    CANTIDAD_EMPLEADOS = {}
+
+    def __init__(self, empleado: Empleado):
+        self._empleado = empleado if self.__check_employee(empleado) else None 
+        self.ids = itertools.count(1) if self.__create_id(itertools.count(1)) else None
+
+    def __check_employee(self, employee: Empleado):
+        return super().check_employee(employee)
+
+    def __create_id(self, id):
+        if len(self.CANTIDAD_EMPLEADOS) == 0:
+            self.CANTIDAD_EMPLEADOS[next(id)] = self._empleado
+        else:
+            id = len(self.CANTIDAD_EMPLEADOS) + 1
+            self.CANTIDAD_EMPLEADOS[id] = self._empleado
+
+class DepartamentoRRHH(Departamento):
+
+    CANTIDAD_EMPLEADOS = {}
+
+    def __init__(self, empleado: Empleado):
+        self._empleado = empleado if self.__check_employee(empleado) else None 
+        self.ids = itertools.count(1) if self.__create_id(itertools.count(1)) else None
+
+    def __check_employee(self, employee: Empleado):
+        return super().check_employee(employee) 
+    
+    def __create_id(self, id):
+        if len(self.CANTIDAD_EMPLEADOS) == 0:
+            self.CANTIDAD_EMPLEADOS[next(id)] = self._empleado
+        else:
+            id = len(self.CANTIDAD_EMPLEADOS) + 1
+            self.CANTIDAD_EMPLEADOS[id] = self._empleado
+
+class DepartamentoContable(Departamento):
+
+    CANTIDAD_EMPLEADOS = {}
+
+    def __init__(self, empleado: Empleado):
+        self._empleado = empleado if self.__check_employee(empleado) else None 
+        self.ids = itertools.count(1) if self.__create_id(itertools.count(1)) else None
+
+    def __check_employee(self, employee: Empleado):
+        return super().check_employee(employee) 
+    
+    def __create_id(self, id):
+        if len(self.CANTIDAD_EMPLEADOS) == 0:
+            self.CANTIDAD_EMPLEADOS[next(id)] = self._empleado
+        else:
+            id = len(self.CANTIDAD_EMPLEADOS) + 1
+            self.CANTIDAD_EMPLEADOS[id] = self._empleado
+
+
+if __name__ == '__main__':
+    e = EmpleadoIT('jesus', 'leal', 28, 95810079, 70000)
+    f = EmpleadoIT('oscar', 'leal', 31, 95810079, 70000)
+    d = GerenteIT('profe', 'paradigmas', 30, 25123456, 120000)
+    d.departamento = DepartamentoIT(e)
+    d.departamento = DepartamentoIT(f)
+    a = EmpleadoRRHH('nuevo', 'apellido', 25, 12345678, 50000)
+    b = GerenteRRHH('gerente', 'rrhh', 31, 45789123, 100000)
+    b.departamento = DepartamentoRRHH(a)
+    c = EmpleadoContable('empleado', 'contable', 27, 17894562, 80000)
+    x = GerenteContable('gerente', 'contable', 31, 54789123, 120000)
+    x.departamento = DepartamentoContable(c)
+    print(f"Empleados Contables | {x.departamento.CANTIDAD_EMPLEADOS}")
+    print(f"Empleados RRHH | {b.departamento.CANTIDAD_EMPLEADOS}")
+    print(f"Empleado IT | {d.departamento.CANTIDAD_EMPLEADOS}")
+    
 
 # from abc import ABC
 # import itertools
@@ -327,10 +410,10 @@ class Departamento(ABC):
 
 
 
-b = EmpleadoRRHH('jesus', 'leal', 28, 95810079, 50000, 'desarrollador')
-b.aumentar_salario(10000)
-b.aumentar_salario(10000)
-b.aumentar_salario(10000)
-b.aumentar_salario(10000)
-b.aumentar_salario(10000)
-b.aumentar_salario(10000)
+# b = EmpleadoRRHH('jesus', 'leal', 28, 95810079, 50000, 'desarrollador')
+# b.aumentar_salario(10000)
+# b.aumentar_salario(10000)
+# b.aumentar_salario(10000)
+# b.aumentar_salario(10000)
+# b.aumentar_salario(10000)
+# b.aumentar_salario(10000)
